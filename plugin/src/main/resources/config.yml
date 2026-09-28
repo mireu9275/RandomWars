@@ -13,3 +13,7 @@ resource-pack:
 box:
   # 룰렛 연출 시간 (틱, 20틱 = 1초)
   roll-ticks: 30
+
+combat:
+  # 플레이어끼리 피해를 주고받은 뒤 전투 상태가 유지되는 시간(초)
+  tag-seconds: 15

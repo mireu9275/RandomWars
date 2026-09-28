@@ -2,6 +2,7 @@ package com.randomwars
 
 import com.randomwars.box.BoxOpener
 import com.randomwars.box.LootTable
+import com.randomwars.combat.CombatTracker
 import com.randomwars.combat.DeathRules
 import com.randomwars.command.RwCommand
 import com.randomwars.command.ZoneCommands
@@ -37,10 +38,12 @@ class RandomWarsPlugin : JavaPlugin() {
         resourcePack = ResourcePackService(this)
         reloadAll()
 
-        listOf(boxOpener, resourcePack, ZoneListener(zones), DeathRules(zoneConfig, zones, loot))
+        val combat = CombatTracker(this, zones) { config.getInt("combat.tag-seconds", 15) }
+        listOf(boxOpener, resourcePack, ZoneListener(zones), combat, DeathRules(zoneConfig, zones, loot))
             .forEach { server.pluginManager.registerEvents(it, this) }
+        combat.start()
         getCommand("rw")!!.setExecutor(RwCommand(this))
-        val zoneCommands = ZoneCommands(zones)
+        val zoneCommands = ZoneCommands(zones, combat)
         getCommand("입장")!!.setExecutor(zoneCommands)
         getCommand("로비")!!.setExecutor(zoneCommands)
 
