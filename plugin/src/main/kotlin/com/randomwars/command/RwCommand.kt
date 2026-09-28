@@ -23,6 +23,8 @@ class RwCommand(private val plugin: RandomWarsPlugin) : TabExecutor {
             }
             "box" -> if (admin(sender)) box(sender, args.drop(1))
             "weapon" -> if (admin(sender)) weapon(sender, args.drop(1))
+            "spawn" -> if (admin(sender)) spawn(sender, args.drop(1))
+            "zone" -> if (admin(sender)) zone(sender)
             else -> usage(sender)
         }
         return true
@@ -111,6 +113,50 @@ class RwCommand(private val plugin: RandomWarsPlugin) : TabExecutor {
         }
     }
 
+    /** 플레이존 워프 후보 지점 관리 (건물 맵용 points 모드) */
+    private fun spawn(sender: CommandSender, args: List<String>) {
+        val zones = plugin.zones
+        val points = plugin.zoneConfig.spawnPoints(zones.play)
+        when (args.getOrNull(0)?.lowercase()) {
+            "add" -> {
+                val player = sender as? Player ?: return
+                if (player.world != zones.play) {
+                    sender.sendMessage(Text.prefix("<red>플레이존 월드(${zones.play.name})에서 등록하세요."))
+                    return
+                }
+                plugin.zoneConfig.addSpawnPoint(player.location)
+                sender.sendMessage(Text.prefix("후보 지점 #${points.size} 등록 (총 ${points.size + 1}개)"))
+            }
+            "list" -> {
+                sender.sendMessage(Text.prefix("후보 지점 ${points.size}개"))
+                points.forEachIndexed { i, p -> sender.sendMessage(Text.mm("  <gray>#$i</gray> ${p.blockX} ${p.blockY} ${p.blockZ}")) }
+            }
+            "remove" -> {
+                val index = args.getOrNull(1)?.toIntOrNull()
+                if (index == null || !plugin.zoneConfig.removeSpawnPoint(index)) {
+                    sender.sendMessage(Text.prefix("<red>/rw spawn remove <번호> (번호는 /rw spawn list)"))
+                    return
+                }
+                sender.sendMessage(Text.prefix("후보 지점 #$index 삭제"))
+            }
+            "tp" -> {
+                val player = sender as? Player ?: return
+                val p = args.getOrNull(1)?.toIntOrNull()?.let { points.getOrNull(it) }
+                if (p == null) sender.sendMessage(Text.prefix("<red>/rw spawn tp <번호>")) else player.teleportAsync(p)
+            }
+            else -> sender.sendMessage(Text.prefix("<red>/rw spawn <add|list|remove|tp>"))
+        }
+    }
+
+    private fun zone(sender: CommandSender) {
+        val c = plugin.zoneConfig
+        val border = plugin.zones.play.worldBorder
+        sender.sendMessage(Text.prefix("로비 <white>${plugin.zones.lobby.name}</white>, 플레이존 <white>${plugin.zones.play.name}</white>"))
+        sender.sendMessage(Text.mm("  <gray>경계: 중심 ${border.center.blockX}, ${border.center.blockZ} / 한 변 ${border.size.toInt()}블록"))
+        sender.sendMessage(Text.mm("  <gray>워프: ${c.warpMode.name.lowercase()}, 후보 지점 ${c.spawnPoints(plugin.zones.play).size}개, 최소 거리 ${c.minPlayerDistance.toInt()}"))
+        sender.sendMessage(Text.mm("  <gray>플레이존 인원: ${plugin.zones.play.players.size}명"))
+    }
+
     private fun admin(sender: CommandSender): Boolean {
         if (sender.hasPermission("randomwars.admin")) return true
         sender.sendMessage(Text.prefix("<red>권한이 없습니다."))
@@ -125,10 +171,11 @@ class RwCommand(private val plugin: RandomWarsPlugin) : TabExecutor {
         val players = { Bukkit.getOnlinePlayers().map(Player::getName) }
         val boxes = listOf("일반", "보급")
         val options = when (args.size) {
-            1 -> listOf("version", "reload", "box", "weapon")
+            1 -> listOf("version", "reload", "box", "weapon", "spawn", "zone")
             2 -> when (args[0].lowercase()) {
                 "box" -> listOf("give", "sim")
                 "weapon" -> listOf("list", "give")
+                "spawn" -> listOf("add", "list", "remove", "tp")
                 else -> emptyList()
             }
             3 -> when ("${args[0]} ${args[1]}".lowercase()) {

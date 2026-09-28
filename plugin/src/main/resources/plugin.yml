@@ -8,7 +8,13 @@ authors: [mireu9275]
 commands:
   rw:
     description: RandomWars 관리 명령
-    usage: /rw <version|reload|box|weapon>
+    usage: /rw <version|reload|box|weapon|spawn|zone>
+  입장:
+    description: 플레이존에 입장합니다
+    aliases: [join]
+  로비:
+    description: 제자리에서 잠시 기다린 뒤 로비로 돌아갑니다
+    aliases: [lobby]
 
 permissions:
   randomwars.admin:
