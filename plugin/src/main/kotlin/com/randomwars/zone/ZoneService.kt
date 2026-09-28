@@ -141,7 +141,7 @@ class ZoneService(
             return CompletableFuture.completedFuture(pick)
         }
         val result = CompletableFuture<Location>()
-        tryRandom(40, farEnough, result) {
+        tryRandom(80, farEnough, result) {
             // 랜덤 좌표를 못 찾으면 후보 지점, 그마저 없으면 월드 스폰
             points.shuffled().firstOrNull(farEnough) ?: points.randomOrNull() ?: play.spawnLocation
         }
@@ -172,6 +172,7 @@ class ZoneService(
     /** 단단한 블록 위, 머리 위 2칸이 비어 있고 액체가 아닌 곳 */
     private fun safeSurface(x: Int, z: Int): Location? {
         val y = play.getHighestBlockYAt(x, z, HeightMap.MOTION_BLOCKING_NO_LEAVES)
+        if (config.maxWarpY > 0 && y + 1 > config.maxWarpY) return null
         val ground = play.getBlockAt(x, y, z)
         if (!ground.type.isSolid || ground.isLiquid) return null
         val feet = ground.getRelative(0, 1, 0)

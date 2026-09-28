@@ -19,6 +19,8 @@ class ZoneConfig(private val file: File) {
         get() = yaml.getDoubleList("play.center").let { (it.getOrNull(0) ?: 0.0) to (it.getOrNull(1) ?: 0.0) }
     val size get() = yaml.getDouble("play.size", 300.0)
     val warpMode get() = runCatching { WarpMode.valueOf(yaml.getString("play.warp-mode", "random")!!.uppercase()) }.getOrDefault(WarpMode.RANDOM)
+    /** 랜덤 워프 착지 높이 상한. 0 이면 제한 없음 (건물 지붕에 떨어지지 않게) */
+    val maxWarpY get() = yaml.getInt("play.max-warp-y", 0)
     val minPlayerDistance get() = yaml.getDouble("play.min-player-distance", 30.0)
     val invulnerableSeconds get() = yaml.getInt("play.invulnerable-seconds", 3)
     val entryBoxes get() = yaml.getInt("play.entry-boxes", 2)
