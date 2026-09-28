@@ -7,6 +7,8 @@ import com.randomwars.combat.DeathRules
 import com.randomwars.command.RwCommand
 import com.randomwars.command.ZoneCommands
 import com.randomwars.pack.ResourcePackService
+import com.randomwars.supply.RegionStore
+import com.randomwars.supply.SupplyService
 import com.randomwars.weapon.WeaponRegistry
 import com.randomwars.zone.ZoneConfig
 import com.randomwars.zone.ZoneListener
@@ -23,25 +25,34 @@ class RandomWarsPlugin : JavaPlugin() {
         private set
     lateinit var zones: ZoneService
         private set
+    lateinit var regions: RegionStore
+        private set
+    lateinit var supply: SupplyService
+        private set
     private lateinit var boxOpener: BoxOpener
     private lateinit var resourcePack: ResourcePackService
 
     override fun onEnable() {
         saveDefaultConfig()
-        listOf("weapons.yml", "loot.yml", "zone.yml").forEach { if (!File(dataFolder, it).exists()) saveResource(it, false) }
+        listOf("weapons.yml", "loot.yml", "zone.yml", "regions.yml").forEach { if (!File(dataFolder, it).exists()) saveResource(it, false) }
 
         weapons = WeaponRegistry(logger)
         loot = LootTable(logger, weapons)
         zoneConfig = ZoneConfig(File(dataFolder, "zone.yml"))
         zones = ZoneService(this, zoneConfig, loot)
+        regions = RegionStore(File(dataFolder, "regions.yml"))
         boxOpener = BoxOpener(this, loot) { config.getInt("box.roll-ticks", 30) }
         resourcePack = ResourcePackService(this)
         reloadAll()
 
         val combat = CombatTracker(this, zones) { config.getInt("combat.tag-seconds", 15) }
-        listOf(boxOpener, resourcePack, ZoneListener(zones), combat, DeathRules(zoneConfig, zones, loot))
+        supply = SupplyService(this, zones, loot, regions,
+            intervalSeconds = { config.getInt("supply.interval-seconds", 600) },
+            dropCount = { config.getInt("supply.count", 2) })
+        listOf(boxOpener, resourcePack, ZoneListener(zones), combat, DeathRules(zoneConfig, zones, loot), supply)
             .forEach { server.pluginManager.registerEvents(it, this) }
         combat.start()
+        supply.start()
         getCommand("rw")!!.setExecutor(RwCommand(this))
         val zoneCommands = ZoneCommands(zones, combat)
         getCommand("입장")!!.setExecutor(zoneCommands)
@@ -52,6 +63,7 @@ class RandomWarsPlugin : JavaPlugin() {
     }
 
     override fun onDisable() {
+        if (::supply.isInitialized) supply.stop()
         if (::boxOpener.isInitialized) boxOpener.shutdown()
         if (::resourcePack.isInitialized) resourcePack.stop()
     }
@@ -62,6 +74,7 @@ class RandomWarsPlugin : JavaPlugin() {
         loot.load(File(dataFolder, "loot.yml"))
         zoneConfig.load()
         zones.setupWorlds()
+        regions.load()
         resourcePack.start(config.getConfigurationSection("resource-pack"))
     }
 }

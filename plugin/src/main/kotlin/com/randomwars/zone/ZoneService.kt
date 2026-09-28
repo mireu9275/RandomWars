@@ -170,7 +170,7 @@ class ZoneService(
     }
 
     /** 단단한 블록 위, 머리 위 2칸이 비어 있고 액체가 아닌 곳 */
-    private fun safeSurface(x: Int, z: Int): Location? {
+    fun safeSurface(x: Int, z: Int): Location? {
         val y = play.getHighestBlockYAt(x, z, HeightMap.MOTION_BLOCKING_NO_LEAVES)
         if (config.maxWarpY > 0 && y + 1 > config.maxWarpY) return null
         val ground = play.getBlockAt(x, y, z)
@@ -179,6 +179,24 @@ class ZoneService(
         val head = ground.getRelative(0, 2, 0)
         if (!feet.isPassable || !head.isPassable || feet.isLiquid || head.isLiquid) return null
         return Location(play, x + 0.5, y + 1.0, z + 0.5, Random.nextFloat() * 360f, 0f)
+    }
+
+    /**
+     * 지붕 아래까지 포함해 지면 근처에서 설 수 있는 바닥 (건물 1층 안쪽도 된다).
+     * max-warp-y 가 있으면 그 높이부터, 없으면 가장 높은 블록부터 아래로 찾는다.
+     */
+    fun groundFloor(x: Int, z: Int): Location? {
+        val top = if (config.maxWarpY > 0) config.maxWarpY else play.getHighestBlockYAt(x, z) + 1
+        // 너무 깊이 내려가면 지하 동굴에 놓이므로 12칸까지만 본다
+        for (y in top downTo maxOf(play.minHeight + 1, top - 12)) {
+            val ground = play.getBlockAt(x, y - 1, z)
+            val feet = play.getBlockAt(x, y, z)
+            val head = play.getBlockAt(x, y + 1, z)
+            if (ground.type.isSolid && !ground.isLiquid && feet.isPassable && !feet.isLiquid && head.isPassable && !head.isLiquid) {
+                return Location(play, x + 0.5, y.toDouble(), z + 0.5)
+            }
+        }
+        return null
     }
 
     // ---------- 로비 복귀 ----------

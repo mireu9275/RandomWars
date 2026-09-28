@@ -12,6 +12,7 @@ import org.bukkit.command.TabExecutor
 import org.bukkit.entity.Player
 
 class RwCommand(private val plugin: RandomWarsPlugin) : TabExecutor {
+    private val supplyCommands = SupplyCommands(plugin)
 
     override fun onCommand(sender: CommandSender, command: Command, label: String, args: Array<out String>): Boolean {
         when (args.getOrNull(0)?.lowercase()) {
@@ -25,6 +26,8 @@ class RwCommand(private val plugin: RandomWarsPlugin) : TabExecutor {
             "weapon" -> if (admin(sender)) weapon(sender, args.drop(1))
             "spawn" -> if (admin(sender)) spawn(sender, args.drop(1))
             "zone" -> if (admin(sender)) zone(sender)
+            "region" -> if (admin(sender)) supplyCommands.region(sender, args.drop(1))
+            "supply" -> if (admin(sender)) supplyCommands.supply(sender, args.drop(1))
             else -> usage(sender)
         }
         return true
@@ -164,23 +167,26 @@ class RwCommand(private val plugin: RandomWarsPlugin) : TabExecutor {
     }
 
     private fun usage(sender: CommandSender) {
-        sender.sendMessage(Text.prefix("<gray>/rw version | reload | box give|sim | weapon list|give"))
+        sender.sendMessage(Text.prefix("<gray>/rw version | reload | box give|sim | weapon list|give | spawn add|list|remove|tp | zone | region add|list|remove|tp | supply now|status"))
     }
 
     override fun onTabComplete(sender: CommandSender, command: Command, alias: String, args: Array<out String>): List<String> {
         val players = { Bukkit.getOnlinePlayers().map(Player::getName) }
         val boxes = listOf("일반", "보급")
         val options = when (args.size) {
-            1 -> listOf("version", "reload", "box", "weapon", "spawn", "zone")
+            1 -> listOf("version", "reload", "box", "weapon", "spawn", "zone", "region", "supply")
             2 -> when (args[0].lowercase()) {
                 "box" -> listOf("give", "sim")
                 "weapon" -> listOf("list", "give")
                 "spawn" -> listOf("add", "list", "remove", "tp")
+                "region" -> listOf("add", "list", "remove", "tp")
+                "supply" -> listOf("now", "status")
                 else -> emptyList()
             }
             3 -> when ("${args[0]} ${args[1]}".lowercase()) {
                 "box give", "weapon give" -> players()
                 "box sim" -> boxes
+                "region remove", "region tp" -> plugin.regions.regions.map { it.name }
                 else -> emptyList()
             }
             4 -> when ("${args[0]} ${args[1]}".lowercase()) {
