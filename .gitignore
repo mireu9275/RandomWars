@@ -1,0 +1,15 @@
+# Gradle / IntelliJ
+.gradle/
+build/
+out/
+.idea/
+*.iml
+.kotlin/
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Local test server
+run/
+server/
