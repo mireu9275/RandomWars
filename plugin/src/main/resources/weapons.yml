@@ -1,0 +1,67 @@
+# 무기 정의 (M1: 스킬 없는 더미 12종)
+# id 는 PDC(randomwars:weapon_id)에 저장되므로 한번 정하면 바꾸지 않는다.
+# grade: common | rare | epic | legendary
+# material: 바닐라 아이템 (기본 공격과 외형의 바탕)
+# model: 리소스팩 item_model (선택). 없으면 바닐라 외형 그대로.
+# roles: 역할 태그 (상성표용, M5에서 사용)
+weapons:
+  rusty_dagger:
+    name: 녹슨 단검
+    grade: common
+    material: IRON_SWORD
+    roles: [폭딜]
+  woodcutter_axe:
+    name: 나무꾼 도끼
+    grade: common
+    material: STONE_AXE
+    roles: [폭딜]
+  training_bow:
+    name: 훈련용 활
+    grade: common
+    material: BOW
+    roles: [원거리]
+  wooden_buckler:
+    name: 나무 방패
+    grade: common
+    material: SHIELD
+    roles: [방어]
+  frost_wand:
+    name: 서리 지팡이
+    grade: common
+    material: BLAZE_ROD
+    roles: [제어]
+  shadow_blade:
+    name: 그림자 단도
+    grade: rare
+    material: GOLDEN_SWORD
+    roles: [이동]
+  twin_blades:
+    name: 연격 쌍검
+    grade: rare
+    material: DIAMOND_SWORD
+    roles: [폭딜]
+  charge_lance:
+    name: 돌격 창
+    grade: rare
+    material: IRON_AXE
+    roles: [이동, 폭딜]
+  hunter_crossbow:
+    name: 사냥꾼 석궁
+    grade: rare
+    material: CROSSBOW
+    roles: [원거리]
+  guardian_aegis:
+    name: 수호자의 방패
+    grade: epic
+    material: SHIELD
+    roles: [방어]
+  blast_staff:
+    name: 폭발 지팡이
+    grade: epic
+    material: BREEZE_ROD
+    roles: [원거리]
+  thunder_hammer:
+    name: 천둥 망치
+    grade: legendary
+    material: MACE
+    roles: [제어, 폭딜]

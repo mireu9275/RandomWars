@@ -1,0 +1,38 @@
+# 랜덤상자 확률표
+# grades: 등급별 가중치 (합이 100일 필요는 없다). 등급 안에서는 무기를 균등하게 뽑는다.
+# consumable-chance: 무기 대신 소모품이 나올 확률 (0.0 ~ 1.0)
+boxes:
+  normal:
+    name: '<white>랜덤상자'
+    model: randomwars:random_box
+    consumable-chance: 0.10
+    grades:
+      common: 60
+      rare: 28
+      epic: 10
+      legendary: 2
+  supply:
+    name: '<gold>보급 랜덤상자'
+    model: randomwars:supply_box
+    consumable-chance: 0.10
+    grades:
+      common: 0
+      rare: 40
+      epic: 45
+      legendary: 15
+
+# 소모품 목록 (weight: 가중치)
+consumables:
+  - material: GOLDEN_APPLE
+    amount: 1
+    weight: 30
+  - material: SPLASH_POTION
+    potion: HEALING
+    amount: 1
+    weight: 30
+  - material: COOKED_BEEF
+    amount: 8
+    weight: 25
+  - material: FIREWORK_ROCKET
+    amount: 3
+    weight: 15

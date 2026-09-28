@@ -1,0 +1,15 @@
+resource-pack:
+  enabled: true
+  # 플러그인이 직접 리소스팩을 내려주는 내장 HTTP 서버 포트
+  port: 8163
+  # 플레이어가 접속할 때 쓰는 주소. 같은 PC에서 테스트하면 localhost,
+  # 다른 사람이 접속하면 서버의 공인 IP나 도메인으로 바꾸고 포트를 열어야 한다.
+  public-host: localhost
+  # 외부 호스팅(GitHub Releases 등) URL을 쓰려면 여기에 적는다. 비워두면 내장 서버를 쓴다.
+  external-url: ''
+  required: true
+  prompt: '<yellow>RandomWars 전용 리소스팩이 필요합니다.'
+
+box:
+  # 룰렛 연출 시간 (틱, 20틱 = 1초)
+  roll-ticks: 30

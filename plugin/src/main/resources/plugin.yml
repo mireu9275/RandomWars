@@ -1,0 +1,16 @@
+name: RandomWars
+version: '${version}'
+main: com.randomwars.RandomWarsPlugin
+api-version: '1.21.11'
+description: 랜덤무기전쟁
+authors: [mireu9275]
+
+commands:
+  rw:
+    description: RandomWars 관리 명령
+    usage: /rw <version|reload|box|weapon>
+
+permissions:
+  randomwars.admin:
+    description: RandomWars 관리 명령 사용
+    default: op
