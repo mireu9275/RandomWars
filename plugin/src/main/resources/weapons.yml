@@ -2,7 +2,7 @@
 # id 는 PDC(randomwars:weapon_id)에 저장되므로 한번 정하면 바꾸지 않는다.
 # grade: common | rare | epic | legendary
 # material: 바닐라 아이템 (기본 공격과 외형의 바탕). 활·방패의 바닐라 우클릭 동작은 스킬로 대체된다.
-# model: 리소스팩 item_model (선택). 없으면 바닐라 외형 그대로.
+# model: 리소스팩 item_model (선택, Blockbench 모델). 없으면 바닐라 외형 그대로.
 # roles: 역할 태그 (상성표용)
 # skill: 우클릭 스킬, shift-skill: 웅크리기+우클릭 스킬
 #   cooldown(초), range(조준 거리), parts: 스킬 부품 목록 (순서대로 실행)
@@ -11,7 +11,7 @@
 #   damage       {damage}                               조준 대상에게 바로 피해
 #   dash         {power, damage, knockback}             바라보는 방향으로 돌진, 경로의 적 타격 (둔화 중이면 약해짐)
 #   blink_behind {distance}                             조준 대상 등 뒤로 순간이동
-#   flurry       {hits, damage, interval(틱), reach}    짧은 시간 연타 (대상이 reach 안에 있어야 계속 들어감)
+#   flurry       {hits, damage, interval(틱), reach, effect}  짧은 시간 연타 (대상이 reach 안에 있어야 계속 들어감), effect: 베기 이펙트 모델
 #   stun         {seconds}                              기절: 이동·스킬 불가
 #   slow         {seconds, amplifier, radius}           둔화 (radius 0 = 조준 대상, 아니면 주변 전체)
 #   knockback    {power, radius, damage}                주변을 밀어냄
@@ -90,6 +90,7 @@ weapons:
     name: 그림자 단도
     grade: rare
     material: GOLDEN_SWORD
+    model: randomwars:shadow_blade
     roles: [이동]
     description: 연격 쌍검과 함께 쓰면 뒤를 잡고 순삭
     skill:
@@ -104,6 +105,7 @@ weapons:
     name: 연격 쌍검
     grade: rare
     material: DIAMOND_SWORD
+    model: randomwars:twin_blades
     roles: [폭딜]
     description: 가까이 붙어야 모든 타격이 들어간다
     skill:
@@ -111,7 +113,7 @@ weapons:
       cooldown: 12
       range: 4
       parts:
-        - {type: flurry, hits: 7, damage: 2.2, interval: 2, reach: 4.5}
+        - {type: flurry, hits: 7, damage: 2.2, interval: 2, reach: 4.5, effect: 'randomwars:slash_effect'}
 
   charge_lance:
     name: 돌격 창

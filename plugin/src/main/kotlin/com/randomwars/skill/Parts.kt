@@ -26,7 +26,8 @@ object Parts {
             "damage" -> Damage(p.num("damage", 4.0))
             "dash" -> Dash(p.num("power", 1.6), p.num("damage", 4.0), p.num("knockback", 0.6))
             "blink_behind" -> BlinkBehind(p.num("distance", 1.3))
-            "flurry" -> Flurry(p.int("hits", 5), p.num("damage", 1.5), p.int("interval", 3), p.num("reach", 5.0))
+            "flurry" -> Flurry(p.int("hits", 5), p.num("damage", 1.5), p.int("interval", 3), p.num("reach", 5.0),
+                p.str("effect", "").takeIf { it.isNotBlank() }?.let { org.bukkit.NamespacedKey.fromString(it) })
             "stun" -> Stun(p.num("seconds", 1.5))
             "slow" -> Slow(p.num("seconds", 3.0), p.int("amplifier", 2), p.num("radius", 0.0))
             "knockback" -> Knockback(p.num("power", 1.2), p.num("radius", 3.0), p.num("damage", 0.0))
@@ -66,6 +67,27 @@ object Parts {
         val dir = entity.location.toVector().subtract(from.toVector()).setY(0)
         if (dir.lengthSquared() < 0.01) dir.copy(from.direction.setY(0))
         entity.velocity = entity.velocity.add(dir.normalize().multiply(power).setY(0.35 * power.coerceAtMost(1.5)))
+    }
+
+    /**
+     * 리소스팩 모델을 ItemDisplay 로 잠깐 띄운다 (스킬 이펙트). roll 은 화면 기준 기울기(도).
+     */
+    fun flashModel(at: Location, model: org.bukkit.NamespacedKey, facing: Vector, roll: Float, scale: Float, ticks: Long) {
+        val item = org.bukkit.inventory.ItemStack(Material.PAPER).apply { editMeta { it.itemModel = model } }
+        val loc = at.clone().setDirection(facing)
+        val display = at.world.spawn(loc, org.bukkit.entity.ItemDisplay::class.java) {
+            it.setItemStack(item)
+            it.isPersistent = false
+            it.itemDisplayTransform = org.bukkit.entity.ItemDisplay.ItemDisplayTransform.FIXED
+            it.brightness = org.bukkit.entity.Display.Brightness(15, 15)
+            it.transformation = org.bukkit.util.Transformation(
+                org.joml.Vector3f(),
+                org.joml.Quaternionf().rotateZ(Math.toRadians(roll.toDouble()).toFloat()),
+                org.joml.Vector3f(scale, scale, scale),
+                org.joml.Quaternionf(),
+            )
+        }
+        Bukkit.getScheduler().runTaskLater(plugin, Runnable { display.remove() }, ticks)
     }
 
     fun victimsAround(center: Location, radius: Double, caster: Player): List<LivingEntity> =
@@ -130,7 +152,13 @@ object Parts {
     }
 
     /** 연타: 짧은 시간에 여러 번 때린다. 대상과 가까이 있어야 들어간다 (등 뒤 이동과 연계) */
-    class Flurry(private val hits: Int, private val damage: Double, private val interval: Int, private val reach: Double) : SkillPart {
+    class Flurry(
+        private val hits: Int,
+        private val damage: Double,
+        private val interval: Int,
+        private val reach: Double,
+        private val effect: org.bukkit.NamespacedKey?,
+    ) : SkillPart {
         override val needsTarget = true
         override fun apply(ctx: SkillContext) {
             val t = ctx.target ?: return
@@ -147,6 +175,11 @@ object Parts {
                 hit(p, t, damage)
                 t.velocity = Vector(before.x, t.velocity.y.coerceAtMost(0.1), before.z)
                 t.world.spawnParticle(Particle.SWEEP_ATTACK, t.location.add(0.0, 1.0, 0.0), 1)
+                effect?.let {
+                    val facing = p.eyeLocation.direction
+                    val at = t.location.add(0.0, 1.0, 0.0).subtract(facing.clone().multiply(0.6))
+                    flashModel(at, it, facing, (done * 67 % 180 - 90).toFloat(), 1.3f, 3L)
+                }
                 t.world.playSound(t.location, Sound.ENTITY_PLAYER_ATTACK_SWEEP, 0.7f, 1.3f + done * 0.05f)
             }, 0L, interval.toLong())
         }
