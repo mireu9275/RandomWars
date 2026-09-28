@@ -55,6 +55,7 @@ class ZoneService(
         play = Bukkit.getWorld(config.playWorld) ?: WorldCreator(config.playWorld).createWorld()!!
         play.pvp = true
         play.setGameRule(GameRule.KEEP_INVENTORY, false)
+        play.setGameRule(GameRule.DO_MOB_SPAWNING, config.mobSpawning)
         val (cx, cz) = config.center
         play.worldBorder.center = Location(play, cx, 0.0, cz)
         play.worldBorder.size = config.size

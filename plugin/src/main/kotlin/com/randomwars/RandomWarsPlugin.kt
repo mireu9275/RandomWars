@@ -7,6 +7,10 @@ import com.randomwars.combat.DeathRules
 import com.randomwars.command.RwCommand
 import com.randomwars.command.ZoneCommands
 import com.randomwars.pack.ResourcePackService
+import com.randomwars.skill.Parts
+import com.randomwars.skill.ProjectileTracker
+import com.randomwars.skill.SkillEffects
+import com.randomwars.skill.SkillService
 import com.randomwars.supply.RegionStore
 import com.randomwars.supply.SupplyService
 import com.randomwars.weapon.WeaponRegistry
@@ -36,6 +40,7 @@ class RandomWarsPlugin : JavaPlugin() {
         saveDefaultConfig()
         listOf("weapons.yml", "loot.yml", "zone.yml", "regions.yml").forEach { if (!File(dataFolder, it).exists()) saveResource(it, false) }
 
+        Parts.plugin = this
         weapons = WeaponRegistry(logger)
         loot = LootTable(logger, weapons)
         zoneConfig = ZoneConfig(File(dataFolder, "zone.yml"))
@@ -49,9 +54,14 @@ class RandomWarsPlugin : JavaPlugin() {
         supply = SupplyService(this, zones, loot, regions,
             intervalSeconds = { config.getInt("supply.interval-seconds", 600) },
             dropCount = { config.getInt("supply.count", 2) })
-        listOf(boxOpener, resourcePack, ZoneListener(zones), combat, DeathRules(zoneConfig, zones, loot), supply)
+        val effects = SkillEffects(this)
+        val projectiles = ProjectileTracker(this, effects)
+        val skills = SkillService(logger, { config.getBoolean("debug", false) }, weapons, effects, projectiles)
+        listOf(boxOpener, resourcePack, ZoneListener(zones) { zoneConfig.mobSpawning }, combat, DeathRules(zoneConfig, zones, loot), supply,
+            effects, projectiles, skills)
             .forEach { server.pluginManager.registerEvents(it, this) }
         combat.start()
+        effects.start()
         supply.start()
         getCommand("rw")!!.setExecutor(RwCommand(this))
         val zoneCommands = ZoneCommands(zones, combat)

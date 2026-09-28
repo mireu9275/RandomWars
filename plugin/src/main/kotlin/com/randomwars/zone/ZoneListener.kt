@@ -14,7 +14,14 @@ import org.bukkit.event.player.PlayerJoinEvent
 import org.bukkit.event.player.PlayerQuitEvent
 import org.bukkit.event.player.PlayerRespawnEvent
 
-class ZoneListener(private val zones: ZoneService) : Listener {
+class ZoneListener(private val zones: ZoneService, private val mobSpawning: () -> Boolean) : Listener {
+
+    /** 몬스터가 스킬 조준을 가로채지 않게, 설정이 꺼져 있으면 플레이존의 기존 몬스터를 치운다 */
+    @EventHandler
+    fun onEntitiesLoad(event: org.bukkit.event.world.EntitiesLoadEvent) {
+        if (event.world != zones.play || mobSpawning()) return
+        event.entities.filterIsInstance<org.bukkit.entity.Enemy>().forEach { it.remove() }
+    }
 
     /** 플레이존에 살아 있는 채로 나갔던 사람만 제자리, 나머지는 모두 로비에서 시작 */
     @EventHandler

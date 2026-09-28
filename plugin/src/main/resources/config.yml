@@ -23,3 +23,6 @@ supply:
   interval-seconds: 600
   # 한 번에 보급이 떨어지는 지역 수
   count: 2
+
+# 스킬 발동을 서버 로그에 남긴다 (테스트용)
+debug: false
